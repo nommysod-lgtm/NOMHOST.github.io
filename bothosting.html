@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="th">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NomHost - Discord Bot Hosting</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffd1dc 0%, #ffb3d9 25%, #c9a0dc 50%, #a7c7e7 75%, #b4e7ce 100%);
+            min-height: 100%;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Wave Background */
+        .wave-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .wave {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            opacity: 0.3;
+        }
+
+        .wave:nth-child(1) {
+            background: radial-gradient(circle, #ffc0cb 20%, transparent 20%),
+                        radial-gradient(circle, #ffc0cb 20%, transparent 20%);
+            background-size: 80px 80px;
+            background-position: 0 0, 40px 40px;
+            animation: wave1 25s linear infinite;
+        }
+
+        .wave:nth-child(2) {
+            background: radial-gradient(circle, #e6b3ff 15%, transparent 15%),
+                        radial-gradient(circle, #e6b3ff 15%, transparent 15%);
+            background-size: 100px 100px;
+            background-position: 0 0, 50px 50px;
+            animation: wave2 30s linear infinite;
+        }
+
+        .wave:nth-child(3) {
+            background: radial-gradient(circle, #b3d9ff 18%, transparent 18%);
+            background-size: 120px 120px;
+            animation: wave3 35s linear infinite;
+        }
+
+        @keyframes wave1 {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes wave2 {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(-360deg); }
+        }
+
+        @keyframes wave3 {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-25%, -25%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* Floating Bubbles */
+        .bubble {
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+            animation: float 15s infinite ease-in-out;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            25% { transform: translateY(-30px) translateX(20px); }
+            50% { transform: translateY(-50px) translateX(-20px); }
+            75% { transform: translateY(-30px) translateX(10px); }
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #ff69b4;
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            color: #9370db;
+            font-size: 18px;
+        }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            color: #ff69b4;
+            font-size: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            font-size: 28px;
+        }
+
+        /* Bot Control Section */
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #a8e6cf, #7ed6a8);
+            color: #2d5f45;
+        }
+
+        .btn-pause {
+            background: linear-gradient(135deg, #ffd93d, #ffb347);
+            color: #8b6914;
+        }
+
+        .btn-restart {
+            background: linear-gradient(135deg, #ffb3d9, #ff8cc6);
+            color: #8b2f5a;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.online {
+            background: #4caf50;
+        }
+
+        .status-dot.offline {
+            background: #f44336;
+        }
+
+        .status-dot.paused {
+            background: #ff9800;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        /* Code Editor */
+        .code-editor {
+            margin-bottom: 15px;
+        }
+
+        .language-selector {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ffb3d9;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            background: white;
+            cursor: pointer;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #c9a0dc;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            background: #f9f9f9;
+        }
+
+        /* Logs Section */
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .log-entry.error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #ff6b6b;
+        }
+
+        .log-entry.info {
+            background: rgba(33, 150, 243, 0.2);
+            color: #64b5f6;
+        }
+
+        .log-entry.success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #81c784;
+        }
+
+        .log-entry.command {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffd54f;
+        }
+
+        .log-time {
+            color: #888;
+            margin-right: 10px;
+        }
+
+        /* User Activity */
+        .activity-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f5f5, #fafafa);
+            border-radius: 15px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:hover {
+            background: linear-gradient(135deg, #ffebee, #fff0f5);
+            transform: translateX(5px);
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .activity-details {
+            flex: 1;
+        }
+
+        .activity-user {
+            font-weight: bold;
+            color: #9370db;
+            margin-bottom: 5px;
+        }
+
+        .activity-command {
+            color: #666;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .activity-time {
+            color: #999;
+            font-size: 12px;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #ffb3d9;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ff69b4;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #ffb3d9, #c9a0dc);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #ff8cc6, #b38fd9);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 36px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .control-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: 100%;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="wave-container">
+   <div class="wave"></div>
+   <div class="wave"></div>
+   <div class="wave"></div>
+  </div>
+  <div class="container">
+   <header>
+    <h1 id="site-title">🧋 NomHost</h1>
+    <p class="subtitle" id="welcome-message">ยินดีต้อนรับสู่ระบบโฮสต์ Discord Bot ที่น่ารักที่สุด! 🎀</p>
+   </header>
+   <div class="dashboard-grid"><!-- Bot Control Panel -->
+    <div class="card">
+     <h2 class="card-title"><span class="icon">🤖</span> ควบคุมบอท</h2>
+     <div class="status-indicator">
+      <div class="status-dot offline" id="status-dot"></div>
+      <div><strong>สถานะ:</strong> <span id="bot-status">ปิดอยู่</span>
+      </div>
+     </div>
+     <div class="control-buttons"><button class="btn btn-start" id="btn-start"> <span id="start-button-text">▶️ เริ่มบอท</span> </button> <button class="btn btn-pause" id="btn-pause" disabled> <span id="pause-button-text">⏸️ พักบอท</span> </button> <button class="btn btn-restart" id="btn-restart" disabled> <span id="restart-button-text">🔄 รีสตาร์ทบอท</span> </button>
+     </div>
+     <div class="stats-grid">
+      <div class="stat-box">
+       <div class="stat-value" id="uptime">
+        0
+       </div>
+       <div class="stat-label">
+        วินาทีออนไลน์
+       </div>
+      </div>
+      <div class="stat-box">
+       <div class="stat-value" id="command-count">
+        0
+       </div>
+       <div class="stat-label">
+        คำสั่งที่ใช้
+       </div>
+      </div>
+     </div>
+    </div><!-- Code Editor -->
+    <div class="card">
+     <h2 class="card-title"><span class="icon">📝</span> สคริปต์บอท</h2>
+     <div class="code-editor"><select class="language-selector" id="language-select"> <option value="python">Python</option> <option value="javascript">JavaScript (Node.js)</option> <option value="typescript">TypeScript</option> <option value="java">Java</option> </select> <textarea id="bot-code" placeholder="วางโค้ดบอทของคุณที่นี่...">
+# Python Discord Bot Example
+import discord
+from discord.ext import commands
+
+bot = commands.Bot(command_prefix='!')
+
+@bot.event
+async def on_ready():
+    print(f'{bot.user} ออนไลน์แล้ว!')
+
+@bot.command()
+async def hello(ctx):
+    await ctx.send('สวัสดี! 🧋')
+
+bot.run('YOUR_TOKEN_HERE')</textarea>
+     </div>
+    </div>
+   </div><!-- User Activity -->
+   <div class="card">
+    <h2 class="card-title"><span class="icon">👥</span> กิจกรรมผู้ใช้งาน</h2>
+    <div class="activity-list" id="activity-list">
+     <div class="activity-item">
+      <div class="user-avatar">
+       N
+      </div>
+      <div class="activity-details">
+       <div class="activity-user">
+        NomUser#1234
+       </div>
+       <div class="activity-command">
+        ใช้คำสั่ง: !hello
+       </div>
+       <div class="activity-time">
+        เมื่อสักครู่
+       </div>
+      </div>
+     </div>
+     <div class="activity-item">
+      <div class="user-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+       B
+      </div>
+      <div class="activity-details">
+       <div class="activity-user">
+        BubbleTea#5678
+       </div>
+       <div class="activity-command">
+        ใช้คำสั่ง: !play music
+       </div>
+       <div class="activity-time">
+        2 นาทีที่แล้ว
+       </div>
+      </div>
+     </div>
+     <div class="activity-item">
+      <div class="user-avatar" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+       J
+      </div>
+      <div class="activity-details">
+       <div class="activity-user">
+        Jelly#9012
+       </div>
+       <div class="activity-command">
+        ใช้คำสั่ง: !help
+       </div>
+       <div class="activity-time">
+        5 นาทีที่แล้ว
+       </div>
+      </div>
+     </div>
+    </div>
+   </div><!-- Console Logs -->
+   <div class="card">
+    <h2 class="card-title"><span class="icon">📊</span> คอนโซล &amp; การแจ้งเตือน</h2>
+    <div class="log-container" id="log-container">
+     <div class="log-entry info"><span class="log-time">[00:00:00]</span> <span>รอการเริ่มต้นบอท...</span>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+        const defaultConfig = {
+            site_title: "🧋 NomHost",
+            welcome_message: "ยินดีต้อนรับสู่ระบบโฮสต์ Discord Bot ที่น่ารักที่สุด! 🎀",
+            start_button_text: "▶️ เริ่มบอท",
+            pause_button_text: "⏸️ พักบอท",
+            restart_button_text: "🔄 รีสตาร์ทบอท"
+        };
+
+        // Bot state
+        let botRunning = false;
+        let botPaused = false;
+        let uptime = 0;
+        let commandCount = 0;
+        let uptimeInterval = null;
+
+        // DOM Elements
+        const btnStart = document.getElementById('btn-start');
+        const btnPause = document.getElementById('btn-pause');
+        const btnRestart = document.getElementById('btn-restart');
+        const statusDot = document.getElementById('status-dot');
+        const botStatus = document.getElementById('bot-status');
+        const uptimeDisplay = document.getElementById('uptime');
+        const commandCountDisplay = document.getElementById('command-count');
+        const logContainer = document.getElementById('log-container');
+        const activityList = document.getElementById('activity-list');
+
+        // Add log entry
+        function addLog(message, type = 'info') {
+            const time = new Date().toLocaleTimeString('th-TH');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `<span class="log-time">[${time}]</span><span>${message}</span>`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Update status
+        function updateStatus(status, dotClass) {
+            botStatus.textContent = status;
+            statusDot.className = `status-dot ${dotClass}`;
+        }
+
+        // Start bot
+        btnStart.addEventListener('click', () => {
+            if (botPaused) {
+                botPaused = false;
+                botRunning = true;
+                updateStatus('กำลังทำงาน', 'online');
+                addLog('เริ่มบอทต่อจากที่พักไว้', 'success');
+                startUptimeCounter();
+            } else {
+                botRunning = true;
+                uptime = 0;
+                updateStatus('กำลังทำงาน', 'online');
+                addLog('กำลังเริ่มต้นบอท...', 'info');
+                setTimeout(() => {
+                    addLog('เชื่อมต่อ Discord Gateway สำเร็จ!', 'success');
+                    addLog('บอทพร้อมใช้งานแล้ว! 🎉', 'success');
+                }, 1000);
+                startUptimeCounter();
+                simulateUserActivity();
+            }
+            
+            btnStart.disabled = true;
+            btnPause.disabled = false;
+            btnRestart.disabled = false;
+        });
+
+        // Pause bot
+        btnPause.addEventListener('click', () => {
+            botPaused = true;
+            botRunning = false;
+            updateStatus('พักอยู่', 'paused');
+            addLog('พักบอทชั่วคราว', 'info');
+            stopUptimeCounter();
+            btnStart.disabled = false;
+        });
+
+        // Restart bot
+        btnRestart.addEventListener('click', () => {
+            addLog('กำลังรีสตาร์ทบอท...', 'info');
+            botRunning = false;
+            stopUptimeCounter();
+            updateStatus('กำลังรีสตาร์ท...', 'paused');
+            
+            setTimeout(() => {
+                uptime = 0;
+                botRunning = true;
+                updateStatus('กำลังทำงาน', 'online');
+                addLog('รีสตาร์ทสำเร็จ!', 'success');
+                startUptimeCounter();
+            }, 2000);
+        });
+
+        // Uptime counter
+        function startUptimeCounter() {
+            uptimeInterval = setInterval(() => {
+                if (botRunning) {
+                    uptime++;
+                    uptimeDisplay.textContent = uptime;
+                }
+            }, 1000);
+        }
+
+        function stopUptimeCounter() {
+            if (uptimeInterval) {
+                clearInterval(uptimeInterval);
+            }
+        }
+
+        // Simulate user activity
+        function simulateUserActivity() {
+            const users = [
+                { name: 'NomUser#1234', initial: 'N', color: '#667eea' },
+                { name: 'BubbleTea#5678', initial: 'B', color: '#f093fb' },
+                { name: 'Jelly#9012', initial: 'J', color: '#4facfe' },
+                { name: 'Pastel#3456', initial: 'P', color: '#a8e6cf' },
+                { name: 'Wave#7890', initial: 'W', color: '#ffd93d' }
+            ];
+
+            const commands = [
+                '!hello', '!help', '!play music', '!info', '!stats',
+                '!ping', '!avatar', '!server', '!user', '!fun'
+            ];
+
+            setInterval(() => {
+                if (botRunning && !botPaused) {
+                    const user = users[Math.floor(Math.random() * users.length)];
+                    const command = commands[Math.floor(Math.random() * commands.length)];
+                    
+                    commandCount++;
+                    commandCountDisplay.textContent = commandCount;
+                    
+                    addLog(`${user.name} ใช้คำสั่ง: ${command}`, 'command');
+                    
+                    // Add to activity list
+                    const activityItem = document.createElement('div');
+                    activityItem.className = 'activity-item';
+                    activityItem.innerHTML = `
+                        <div class="user-avatar" style="background: linear-gradient(135deg, ${user.color}, ${adjustColor(user.color)});">${user.initial}</div>
+                        <div class="activity-details">
+                            <div class="activity-user">${user.name}</div>
+                            <div class="activity-command">ใช้คำสั่ง: ${command}</div>
+                            <div class="activity-time">เมื่อสักครู่</div>
+                        </div>
+                    `;
+                    activityList.insertBefore(activityItem, activityList.firstChild);
+                    
+                    // Keep only last 10 activities
+                    while (activityList.children.length > 10) {
+                        activityList.removeChild(activityList.lastChild);
+                    }
+
+                    // Simulate random errors (10% chance)
+                    if (Math.random() < 0.1) {
+                        setTimeout(() => {
+                            addLog('⚠️ เกิดข้อผิดพลาด: Rate limit exceeded - รอ 5 วินาที', 'error');
+                        }, 500);
+                    }
+                }
+            }, 5000);
+        }
+
+        // Helper function to adjust color
+        function adjustColor(color) {
+            const hex = color.replace('#', '');
+            const r = Math.max(0, parseInt(hex.substr(0, 2), 16) - 30);
+            const g = Math.max(0, parseInt(hex.substr(2, 2), 16) - 30);
+            const b = Math.max(0, parseInt(hex.substr(4, 2), 16) - 30);
+            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        }
+
+        // Create floating bubbles
+        function createBubbles() {
+            for (let i = 0; i < 15; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 60 + 20;
+                bubble.style.width = size + 'px';
+                bubble.style.height = size + 'px';
+                bubble.style.left = Math.random() * 100 + '%';
+                bubble.style.top = Math.random() * 100 + '%';
+                bubble.style.animationDelay = Math.random() * 5 + 's';
+                bubble.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                document.body.appendChild(bubble);
+            }
+        }
+
+        createBubbles();
+
+        // Element SDK Integration
+        if (window.elementSdk) {
+            async function onConfigChange(config) {
+                document.getElementById('site-title').textContent = config.site_title || defaultConfig.site_title;
+                document.getElementById('welcome-message').textContent = config.welcome_message || defaultConfig.welcome_message;
+                document.getElementById('start-button-text').textContent = config.start_button_text || defaultConfig.start_button_text;
+                document.getElementById('pause-button-text').textContent = config.pause_button_text || defaultConfig.pause_button_text;
+                document.getElementById('restart-button-text').textContent = config.restart_button_text || defaultConfig.restart_button_text;
+            }
+
+            window.elementSdk.init({
+                defaultConfig: defaultConfig,
+                onConfigChange: onConfigChange,
+                mapToCapabilities: () => ({
+                    recolorables: [],
+                    borderables: [],
+                    fontEditable: undefined,
+                    fontSizeable: undefined
+                }),
+                mapToEditPanelValues: (config) => new Map([
+                    ["site_title", config.site_title || defaultConfig.site_title],
+                    ["welcome_message", config.welcome_message || defaultConfig.welcome_message],
+                    ["start_button_text", config.start_button_text || defaultConfig.start_button_text],
+                    ["pause_button_text", config.pause_button_text || defaultConfig.pause_button_text],
+                    ["restart_button_text", config.restart_button_text || defaultConfig.restart_button_text]
+                ])
+            });
+        }
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a9368cb33114b65',t:'MTc2NDkzNjMwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
